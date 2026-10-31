@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<title>贪吃蛇</title>
+<style>
+  :root {
+    --ink: #2f343a;
+    --frame: #3a4046;
+    --line: #e9ebee;
+    --food: #e8543f;
+    --box-border: #d9dce1;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: #ffffff;
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrap {
+    --u: min(92vw, 520px, calc((100vh - 40px) / 1.72));
+    --btn: calc(var(--u) * 0.21);
+    width: var(--u);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 0.045);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ---------------- scores ---------------- */
+
+  .scores {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--u) * 0.022);
+  }
+
+  .score-label {
+    font-size: calc(var(--u) * 0.038);
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
+  .score-value {
+    min-width: calc(var(--u) * 0.3);
+    padding: calc(var(--u) * 0.012) calc(var(--u) * 0.03);
+    text-align: center;
+    font-size: calc(var(--u) * 0.055);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--ink);
+    background: #fbfbfc;
+    border: 1.5px solid var(--box-border);
+    border-radius: calc(var(--u) * 0.018);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------------- board ---------------- */
+
+  .board {
+    border: calc(var(--u) * 0.018) solid var(--frame);
+    border-radius: calc(var(--u) * 0.022);
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(47, 52, 58, 0.1);
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    touch-action: none;
+  }
+
+  #game {
+    position: absolute;
+    inset: 0;
+  }
+
+  #game canvas {
+    display: block;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+    z-index: 2;
+  }
+
+  .overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+  }
+
+  .panel-title {
+    margin: 0;
+    font-size: calc(var(--u) * 0.075);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-indent: 0.14em;
+  }
+
+  .panel-hint {
+    margin: calc(var(--u) * 0.03) 0 0;
+    font-size: calc(var(--u) * 0.032);
+    line-height: 1.8;
+    color: #7c848d;
+  }
+
+  .panel-result {
+    margin: calc(var(--u) * 0.03) 0 0;
+    font-size: calc(var(--u) * 0.036);
+    color: #7c848d;
+  }
+
+  .panel-result b {
+    color: var(--ink);
+    font-size: calc(var(--u) * 0.052);
+  }
+
+  .btn {
+    margin-top: calc(var(--u) * 0.06);
+    padding: calc(var(--u) * 0.024) calc(var(--u) * 0.07);
+    font: inherit;
+    font-size: calc(var(--u) * 0.036);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    background: var(--frame);
+    border: none;
+    border-radius: calc(var(--u) * 0.018);
+    cursor: pointer;
+    transition: background 120ms ease, transform 80ms ease;
+  }
+
+  .btn:hover { background: #2b3037; }
+  .btn:active { transform: translateY(1px); }
+
+  /* ---------------- dpad ---------------- */
+
+  .dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--u) * 0.028);
+  }
+
+  .dpad-row {
+    display: flex;
+    gap: calc(var(--u) * 0.045);
+  }
+
+  .pad {
+    width: var(--btn);
+    height: var(--btn);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    border-radius: calc(var(--btn) * 0.2);
+    background: linear-gradient(180deg, #59606a 0%, #434a53 55%, #3a4046 100%);
+    box-shadow: 0 3px 0 #2a2f34, 0 5px 10px rgba(42, 47, 52, 0.22);
+    cursor: pointer;
+    transition: transform 60ms ease, box-shadow 60ms ease;
+  }
+
+  .pad svg {
+    width: 56%;
+    height: 56%;
+    fill: #ffffff;
+    pointer-events: none;
+  }
+
+  .pad:active,
+  .pad.is-pressed {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #2a2f34, 0 3px 6px rgba(42, 47, 52, 0.2);
+  }
+
+  .pad:focus-visible {
+    outline: 2px solid #9aa3ad;
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="scores">
+      <div class="score">
+        <span class="score-label">当前分数</span>
+        <span class="score-value" id="score">0</span>
+      </div>
+      <div class="score">
+        <span class="score-label">历史最高</span>
+        <span class="score-value" id="best">0</span>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="stage" id="stage">
+        <div id="game"></div>
+        <div class="overlay" id="overlay"></div>
+      </div>
+    </div>
+
+    <div class="dpad">
+      <button class="pad" type="button" data-dir="up" aria-label="上">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l8 9h-5v7h-6v-7H4z"/></svg>
+      </button>
+      <div class="dpad-row">
+        <button class="pad" type="button" data-dir="left" aria-label="左">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l9-8v5h7v6h-7v5z"/></svg>
+        </button>
+        <button class="pad" type="button" data-dir="down" aria-label="下">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20l-8-9h5V4h6v7h5z"/></svg>
+        </button>
+        <button class="pad" type="button" data-dir="right" aria-label="右">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12l-9 8v-5H4V9h7V4z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./vendor/phaser.min.js"></script>
+  <script>
+    // 本地优先；托管环境下 vendor 未随仓库发布时回退到 CDN
+    if (!window.Phaser) {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"><\/script>');
+    }
+  </script>
+  <script src="./src/food-texture.js"></script>
+  <script src="./src/face-textures.js"></script>
+  <script src="./src/snake-simulation.js"></script>
+  <script src="./src/main.js"></script>
+</body>
+</html>
