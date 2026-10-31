@@ -262,14 +262,9 @@
 
   <script src="./vendor/phaser.min.js"></script>
   <script>
-    // 本地优先；托管环境下 vendor 未随仓库发布时回退到 CDN
+    // 本地有 vendor 副本时直接使用；托管环境未包含该文件时回退到 CDN。
     if (!window.Phaser) {
       document.write('<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"><\/script>');
-    }
-  </script>
-  <script>
-    if (!window.Phaser) {
-      document.write('<script src="https://unpkg.com/phaser@3.80.1/dist/phaser.min.js"><\/script>');
     }
   </script>
   <script src="./src/food-texture.js"></script>
