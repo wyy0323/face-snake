@@ -305,7 +305,7 @@
 
     var dir = sim.direction;
     this.headView.setVisible(true);
-    this.headView.setDisplaySize(CELL * 0.6, CELL * 0.6);
+    this.headView.setDisplaySize(CELL * 1.2, CELL * 1.2);
     this.headView.setPosition(
       body[0].x * CELL + CELL / 2 + dir.x * CELL * 0.05,
       body[0].y * CELL + CELL / 2 + dir.y * CELL * 0.05
