@@ -326,7 +326,9 @@
   }
 
   new Phaser.Game({
-    type: Phaser.AUTO,
+    // 强制 Canvas 2D：部分安卓机（如 HarmonyOS 华为浏览器）WebGL 被禁用，
+    // AUTO 模式下会探测失败导致整块棋盘无法渲染。
+    type: Phaser.CANVAS,
     parent: 'game',
     width: COLS * CELL,
     height: ROWS * CELL,
