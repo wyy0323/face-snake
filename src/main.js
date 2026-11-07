@@ -315,6 +315,16 @@
 
   /* ----------------------------------------------------------------- boot */
 
+  if (typeof Phaser === 'undefined') {
+    els.overlay.innerHTML =
+      '<div class="panel">' +
+        '<h1 class="panel-title">加载失败</h1>' +
+        '<p class="panel-hint">Phaser 资源未能加载，请刷新页面重试</p>' +
+      '</div>';
+    els.overlay.classList.add('is-open');
+    return;
+  }
+
   new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
