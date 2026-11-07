@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>设备检测</title>
+<style>
+  body { margin: 0; padding: 16px; font: 15px/1.7 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #222; background: #fff; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  pre { white-space: pre-wrap; word-break: break-all; background: #f5f6f8; border: 1px solid #e3e6ea; border-radius: 8px; padding: 12px; font-size: 13px; }
+  .ok { color: #1a7f37; }
+  .bad { color: #c62828; }
+</style>
+</head>
+<body>
+<h1>设备检测</h1>
+<pre id="out">检测中…</pre>
+<script>
+(function () {
+  var lines = [];
+  function add(k, v) { lines.push(k + ': ' + v); }
+
+  add('UA', navigator.userAgent);
+  add('屏幕', screen.width + ' x ' + screen.height);
+  add('视口', window.innerWidth + ' x ' + window.innerHeight);
+  add('DPR', window.devicePixelRatio);
+
+  try {
+    var c = document.createElement('canvas');
+    add('Canvas2D', !!c.getContext('2d'));
+    add('WebGL', !!(c.getContext('webgl') || c.getContext('experimental-webgl')));
+  } catch (e) {
+    add('Canvas', '异常 ' + e.message);
+  }
+
+  if (window.CSS && CSS.supports) {
+    add('CSS min()', CSS.supports('width', 'min(1px, 2px)'));
+    add('CSS var()', CSS.supports('color', 'var(--x)'));
+    add('CSS aspect-ratio', CSS.supports('aspect-ratio', '1 / 1'));
+    add('CSS padding-top%', CSS.supports('padding-top', '100%'));
+  } else {
+    add('CSS.supports', '不支持');
+  }
+
+  add('Promise', typeof Promise);
+  add('fetch', typeof fetch);
+
+  var out = document.getElementById('out');
+  out.textContent = lines.join('\n');
+})();
+</script>
+</body>
+</html>
