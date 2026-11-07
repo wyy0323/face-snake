@@ -260,16 +260,79 @@
     </div>
   </div>
 
-  <script src="./vendor/phaser.min.js"></script>
-  <script>
-    // 本地有 vendor 副本时直接使用；托管环境未包含该文件时回退到 CDN。
-    if (!window.Phaser) {
-      document.write('<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"><\/script>');
-    }
-  </script>
   <script src="./src/food-texture.js"></script>
   <script src="./src/face-textures.js"></script>
   <script src="./src/snake-simulation.js"></script>
-  <script src="./src/main.js"></script>
+  <script>
+    /* Phaser 加载：本地 vendor 优先，失败后依次回退国内可用 CDN，单源 8 秒超时。 */
+    (function () {
+      var SOURCES = [
+        './vendor/phaser.min.js',
+        'https://cdn.bootcdn.net/ajax/libs/phaser/3.80.1/phaser.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js',
+        'https://unpkg.com/phaser@3.80.1/dist/phaser.min.js',
+        'https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js'
+      ];
+      var TIMEOUT = 8000;
+      var index = 0;
+
+      function showError(text) {
+        var overlay = document.getElementById('overlay');
+        overlay.innerHTML =
+          '<div class="panel">' +
+            '<h1 class="panel-title">加载失败</h1>' +
+            '<p class="panel-hint">' + text + '</p>' +
+            '<button class="btn" type="button" id="reloadBtn">重新加载</button>' +
+          '</div>';
+        overlay.classList.add('is-open');
+        document.getElementById('reloadBtn').addEventListener('click', function () { location.reload(); });
+      }
+
+      function startGame() {
+        var script = document.createElement('script');
+        script.src = './src/main.js';
+        script.onerror = function () { showError('主程序加载失败，请刷新页面重试'); };
+        document.head.appendChild(script);
+      }
+
+      function next() {
+        if (index >= SOURCES.length) {
+          showError('游戏引擎未能加载，请检查网络后点击重新加载');
+          return;
+        }
+
+        var url = SOURCES[index++];
+        var settled = false;
+        var script = document.createElement('script');
+
+        var timer = setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          script.onload = script.onerror = null;
+          next();
+        }, TIMEOUT);
+
+        script.onload = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          if (window.Phaser) startGame();
+          else next();
+        };
+
+        script.onerror = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          next();
+        };
+
+        script.src = url;
+        document.head.appendChild(script);
+      }
+
+      next();
+    })();
+  </script>
 </body>
 </html>
