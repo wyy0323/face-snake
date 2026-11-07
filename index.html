@@ -94,13 +94,16 @@
   .stage {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    padding-top: 100%; /* 1:1 正方形，兼容不支持 aspect-ratio 的旧浏览器 */
     touch-action: none;
   }
 
   #game {
     position: absolute;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
   }
 
   #game canvas {
@@ -109,7 +112,10 @@
 
   .overlay {
     position: absolute;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: grid;
     place-items: center;
     padding: 20px;
@@ -238,7 +244,12 @@
     <div class="board">
       <div class="stage" id="stage">
         <div id="game"></div>
-        <div class="overlay" id="overlay"></div>
+        <div class="overlay is-open" id="overlay">
+          <div class="panel">
+            <h1 class="panel-title">加载中</h1>
+            <p class="panel-hint">正在加载游戏资源…</p>
+          </div>
+        </div>
       </div>
     </div>
 
